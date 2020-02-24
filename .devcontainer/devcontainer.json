@@ -1,0 +1,8 @@
+{
+	"name": "Advent of Code 2015",
+	"dockerFile": "Dockerfile",
+	"appPort": 9015,
+	"extensions": [
+		"alanz.vscode-hie-server"
+	]
+}
