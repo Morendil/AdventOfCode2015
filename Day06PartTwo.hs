@@ -22,27 +22,16 @@ split :: String -> String -> [String]
 split sep = map unpack . splitOn (pack sep) . pack
 
 apply :: IOArray (Int,Int) Int -> Instruction -> IO (IOArray (Int,Int) Int)
-apply arr (Toggle,((xmin,ymin),(xmax,ymax))) = do
-    sequence_ [toggle arr (x,y) | x <- [xmin..xmax], y <- [ymin..ymax]]
+apply arr (action,((xmin,ymin),(xmax,ymax))) = do
+    sequence_ [perform action arr (x,y) | x <- [xmin..xmax], y <- [ymin..ymax]]
     return arr
-        where toggle :: IOArray (Int,Int) Int -> (Int, Int) -> IO ()
-              toggle arr coords = do
+        where perform :: Action -> IOArray (Int,Int) Int -> (Int, Int) -> IO ()
+              perform action arr coords = do
                 val <- readArray arr coords
-                writeArray arr coords (val + 2)
-apply arr (On,((xmin,ymin),(xmax,ymax))) = do
-    sequence_ [toggle arr (x,y) | x <- [xmin..xmax], y <- [ymin..ymax]]
-    return arr
-        where toggle :: IOArray (Int,Int) Int -> (Int, Int) -> IO ()
-              toggle arr coords = do
-                val <- readArray arr coords
-                writeArray arr coords (val + 1)
-apply arr (Off,((xmin,ymin),(xmax,ymax))) = do
-    sequence_ [toggle arr (x,y) | x <- [xmin..xmax], y <- [ymin..ymax]]
-    return arr
-        where toggle :: IOArray (Int,Int) Int -> (Int, Int) -> IO ()
-              toggle arr coords = do
-                val <- readArray arr coords
-                writeArray arr coords (max 0 (val - 1))
+                writeArray arr coords (pick action val)
+              pick On val = val + 1
+              pick Off val = max 0 (val - 1)
+              pick Toggle val = val + 2
 
 main = do
     instructions <- map instruction . lines <$> readFile "day06.txt"
