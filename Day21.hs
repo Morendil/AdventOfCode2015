@@ -4,9 +4,9 @@ data Equipment = E (Int, Int, Int)
     deriving (Eq, Show)
 
 wins :: Player -> Player -> Bool
-wins (hp1,dmg1,arm1) (hp2,dmg2,arm2) = dpt1 == 0 || (dpt2 > 0 && (hp1 `div` dpt1) >= (hp2 `div` dpt2))
-    where dpt1 = max 0 (dmg2-arm1)
-          dpt2 = max 0 (dmg1-arm2)
+wins (hp1,dmg1,arm1) (hp2,dmg2,arm2) = (hp1 `div` dpt1) >= (hp2 `div` dpt2)
+    where dpt1 = max 1 (dmg2-arm1)
+          dpt2 = max 1 (dmg1-arm2)
 
 
 outfits :: [[Equipment]]
