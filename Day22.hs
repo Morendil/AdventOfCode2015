@@ -1,5 +1,5 @@
 import Algorithm.Search
-import Data.Maybe (mapMaybe)
+import Data.Maybe (mapMaybe, fromJust)
 
 data State = State {playerHp :: Int, mana :: Int, bossHp :: Int, bossDamage :: Int, spells :: [Spell], spellCost :: Int}
     deriving (Eq, Show, Ord)
@@ -18,6 +18,9 @@ allSpells = [Spell {cost=53, timer=0, effect=Missile},
              Spell {cost=113, timer=6, effect=Shield},
              Spell {cost=173, timer=6, effect=Poison},
              Spell {cost=229, timer=5, effect=Recharge}]
+
+simulate2 :: State -> Spell -> Maybe State
+simulate2 state spell = if playerHp state <= 1 then Nothing else simulate state {playerHp = playerHp state -1 } spell
 
 simulate :: State -> Spell -> Maybe State
 simulate state spell = if duplicateSpell || mana endState < 0 || playerHp endState <= 0 then Nothing else Just endState
@@ -44,6 +47,9 @@ apply state Recharge = state {mana = mana state + 101}
 neighbours :: State -> [State]
 neighbours state = mapMaybe (simulate state) allSpells
 
+neighbours2 :: State -> [State]
+neighbours2 state = mapMaybe (simulate2 state) allSpells
+
 moveCost :: State -> State -> Int
 moveCost _ = spellCost
 
@@ -53,7 +59,14 @@ heuristic state = bossHp state `div` 4
 goal :: State -> Bool
 goal state = bossHp state <= 0
 
+solve1 :: State -> Int
+solve1 = fst . fromJust . aStar neighbours moveCost heuristic goal
+
+solve2 :: State -> Int
+solve2 = fst . fromJust . aStar neighbours2 moveCost heuristic goal
+
 main = do
     let initial = State {playerHp = 50, mana = 500, bossHp = 71, bossDamage = 10, spells = [], spellCost = 0}
     -- let initial = State {playerHp = 10, mana = 250, bossHp = 14, bossDamage = 8, spells = [], spellCost = 0}
-    print $ aStar neighbours moveCost heuristic goal initial
+    print $ solve1 initial
+    print $ solve2 initial
